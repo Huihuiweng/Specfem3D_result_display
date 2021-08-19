@@ -32,6 +32,8 @@ Vs = 3.33   # in km/s
 ContourT = 5
 # Number of countours of final slip
 ContourS = 3
+# Python version =2 or >3
+Python_version = 3.8
 
 #=====================================
 
@@ -41,7 +43,7 @@ ContourS = 3
 ## Files check
 file_dir  = Work_dir + Model_name
 if not os.path.isdir(file_dir):
-    print "The directory that contains the data doesn't exist..."
+    print("The directory that contains the data doesn't exist...")
     exit()
 file_list = os.listdir(file_dir)
 snap_list = []
@@ -52,16 +54,16 @@ for name in file_list:
         time_list.append(int(name.split('Snapshot')[1].split('_')[0]))
 num_data   = len(time_list)
 time_list  = np.asarray(sorted(time_list))
-print 
-print "The model name is:", Model_name
-print "The model has", num_data, "data files."
-print "The time list is:", time_list
-print 
+print("") 
+print( "The model name is:", Model_name)
+print( "The model has", num_data, "data files.")
+print( "The time list is:", time_list)
+print("")
 if(display_horizontally):
-    print "Project the fault horizontally."
+    print("Project the fault horizontally.")
 else:
-    print "Project the fault onto a vertical plane (clockwisely rotated ", Rotate, " degree about X-Z plane)."
-print
+    print("Project the fault onto a vertical plane (clockwisely rotated ", Rotate, " degree about X-Z plane).")
+print("")
 
 #==================
 #   Functions   ===
@@ -75,7 +77,10 @@ def  FSEM3D_snapshot(filename):
     for ii in range(NDAT):
         read_buf = binary_file.read(4)    # the number of bytes of int is 4
         number = struct.unpack('1i',read_buf)[0]
-        N = number/length
+        if(Python_version<3):
+           N = number/length
+        else:
+           N = number//length
         read_buf = binary_file.read(number)
         read_d   = struct.unpack(str(N)+'f',read_buf)
         read_d   = np.array(read_d)
@@ -110,8 +115,8 @@ Y    = Data[0].Y
 Z    = Data[0].Z   
 # if it is a vertical fault (along X or Y axis)
 if((np.min(X) == np.max(X) or np.min(Y)==np.max(Y)) and display_horizontally):
-    print "Warning: it is a vertical fault along X or Y axis, the fault will be displayed vertically!!!"
-    print "Please change display_horizontally to be False and setup the strike of fault to be 0 or 90."
+    print( "Warning: it is a vertical fault along X or Y axis, the fault will be displayed vertically!!!")
+    print( "Please change display_horizontally to be False and setup the strike of fault to be 0 or 90.")
     exit()
 
 if(not display_horizontally):
@@ -132,10 +137,10 @@ if(display_horizontally):
     fault_range =  [X_lower,X_upper,Y_lower,Y_upper]
     fault_dims  = [X_dim,Y_dim]
 else:
-    X_Y    = np.column_stack((Y, Z))
-    Relief = Y
-    grid_x, grid_y = np.mgrid[Y_lower:Y_upper:Y_dim*1j, Z_lower:Z_upper:Z_dim*1j]
-    fault_range =  [Y_lower,Y_upper,Z_lower,Z_upper]
+    X_Y    = np.column_stack((X, Z))
+    Relief = X
+    grid_x, grid_y = np.mgrid[X_lower:X_upper:X_dim*1j, Z_lower:Z_upper:Z_dim*1j]
+    fault_range =  [X_lower,X_upper,Z_lower,Z_upper]
     fault_dims  = [Y_dim,Z_dim]
 
 
@@ -244,7 +249,7 @@ plt.title('Dip Stress Drop')
 
 plt.savefig("ps/"+Model_name+"-results.pdf",format="pdf")
 
-print "pdf file is saved."
+print("pdf file is saved.")
 ###
 
 ### Save data
@@ -267,4 +272,4 @@ for x in range(fault_dims[0]):
         output.writelines("\n")
 output.close()
 
-print "dat file is saved."
+print("dat file is saved.")
